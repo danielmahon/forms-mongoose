@@ -5,6 +5,7 @@ var forms = require('forms')
   , _ = require('underscore');
 
 _fields = {
+  'Number': 'number',
   'String': 'string',
   'Password': 'password',
   'Email': 'email'
