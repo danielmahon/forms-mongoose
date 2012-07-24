@@ -5,6 +5,7 @@ var forms = require('forms')
   , _ = require('underscore');
 
 _fields = {
+  'Boolean': 'boolean',
   'String': 'string',
   'Number': 'number',
   'Password': 'password',
