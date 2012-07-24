@@ -5,8 +5,8 @@ var forms = require('forms')
   , _ = require('underscore');
 
 _fields = {
-  'Number': 'number',
   'String': 'string',
+  'Number': 'number',
   'Password': 'password',
   'Email': 'email'
 }
@@ -17,29 +17,31 @@ function convert_mongoose_field(mongoose_field) {
 
 function get_field(path, form_name) {
   var _field = null;
-  if (!(path.options && path.options.forms))
-    return null;
+  if (!(path.options && path.options.forms)) return null;
   var forms = path.options.forms;
-  if (!(forms[form_name] || forms['all']))
-    return null;
+  if (!(forms[form_name] || forms['all'])) return null;
 
   var _options = _.extend({}, forms['all'], forms[form_name]);
-
-  if (_options.type)
+    
+  if (_options.type) {
     _field = (typeof _options.type === 'string') ? fields[_options.type] : _options.type
-  if (!_field)
+  }
+  if (!_field) {
     _field = convert_mongoose_field( path.options.type ? path.options.type.name : path.instance );
-  if (!_field)
+  }
+  if (!_field) {
     throw new Error('Model does not have forms.type, probably on a virtual', path);
+  }
   var _fields = {}
   _fields[path.path] = _field(_options = _.defaults(_options, {
     required: path.options.required || path.options.unique
   }));
-  if (_options.confirm)
+  if (_options.confirm) {
     _fields[path.path + '.confirm'] = _field(_.extend({}, _options, {
       validators: [validators.matchField(path.path)]
     }));
-  if(_options.existing)
+  }
+  if(_options.existing) {
     _fields[path.path + '.existing'] = _field(_.extend({}, _options, {
       validators: [function (form, field, callback) {
         if (!form.existing)
@@ -58,14 +60,20 @@ function get_field(path, form_name) {
         }
       }]
     }));
+  }
   return _fields;
 }
 
 module.exports.create = function (model, extra_params, form_name) {
+  if (arguments.length == 2) {
+  	form_name = extra_params;
+  	extra_params = null;
+  }
   var schema = model.schema
     , paths = schema.paths
     , virtuals = schema.virtuals
     , params = {};
+
   for (var pathName in paths) {
     var path = paths[pathName];
     var field = get_field(path, form_name);
@@ -79,8 +87,7 @@ module.exports.create = function (model, extra_params, form_name) {
     if (field)
       params = _.extend(params, field);
   }
-  params = _.extend({}, params, extra_params);
-  var form = forms.create(params);
+  if (extra_params) params = _.extend({}, params, extra_params);
   return forms.create(params);
 }
 
